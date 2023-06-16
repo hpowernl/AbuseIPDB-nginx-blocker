@@ -13,12 +13,23 @@ def load_config():
         return json.load(f)
 
 def get_recent_ips():
-    command = ['/usr/bin/hypernode-parse-nginx-log', '--today', '--bots', '--fields', 'remote_addr']
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    # Definieer de commando's en hun argumenten
+    command1 = ['/usr/bin/hypernode-parse-nginx-log', '--today', '--bots', '--fields', 'remote_addr']
+    command2 = ['sus']
+    command3 = ['awk', '{$1=""; print $0}']
 
-    if process.returncode != 0:
-        raise Exception(f'Error executing pnl command: {stderr.decode()}')
+    # Creëer de processen
+    process1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
+    process2 = subprocess.Popen(command2, stdin=process1.stdout, stdout=subprocess.PIPE)
+    process3 = subprocess.Popen(command3, stdin=process2.stdout, stdout=subprocess.PIPE)
+
+    # Laat de gegevens door de pijplijn stromen
+    process1.stdout.close()  
+    process2.stdout.close()  
+    stdout, stderr = process3.communicate()
+
+    if process3.returncode != 0:
+        raise Exception(f'Error executing command: {stderr.decode()}')
 
     return stdout.decode().split('\n')[-100:]
 
