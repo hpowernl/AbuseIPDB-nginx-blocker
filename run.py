@@ -2,6 +2,11 @@ import os
 import subprocess
 import json
 import requests
+import time
+
+CACHE_FILENAME = 'checked_ips.json'
+BLACKLIST_FILENAME = '/data/web/nginx/server.block_80procent_abuseIP'
+CACHE_EXPIRATION_SECONDS = 48 * 60 * 60  # 48 hours in seconds
 
 def load_config():
     with open('config.json') as f:
@@ -37,20 +42,52 @@ def check_ip_abuse(config, ip):
 
     return result['data']['abuseConfidenceScore']
 
+def load_blacklist():
+    with open(BLACKLIST_FILENAME, 'r') as f:
+        return set(line.split()[1] for line in f if line.startswith("deny"))
+
 def add_to_blacklist(ip):
-    with open('/data/web/nginx/server.block_80procent_abuseIP', 'a') as f:
-        f.write(f"deny {ip};\n")
+    blacklist = load_blacklist()
+    
+    if ip not in blacklist:
+        with open(BLACKLIST_FILENAME, 'a') as f:
+            f.write(f"deny {ip};\n")
+
+def load_checked_ips():
+    if os.path.exists(CACHE_FILENAME):
+        with open(CACHE_FILENAME, 'r') as f:
+            return json.load(f)
+    else:
+        return {}
+
+def save_checked_ips(checked_ips):
+    with open(CACHE_FILENAME, 'w') as f:
+        json.dump(checked_ips, f)
+
+def cleanup_checked_ips(checked_ips):
+    current_time = time.time()
+
+    for ip, added_time in list(checked_ips.items()):
+        if current_time - added_time > CACHE_EXPIRATION_SECONDS:
+            del checked_ips[ip]
+
+    save_checked_ips(checked_ips)
 
 def main():
     config = load_config()
+    checked_ips = load_checked_ips()  
 
     for ip in get_recent_ips():
-        if ip:  # Skip empty IP addresses
+        if ip and ip not in checked_ips:  
             score = check_ip_abuse(config, ip)
 
             if score >= 80:
                 add_to_blacklist(ip)
+            
+            checked_ips[ip] = time.time() 
 
+    save_checked_ips(checked_ips) 
+    cleanup_checked_ips(checked_ips)  
 
 if __name__ == '__main__':
     main()
