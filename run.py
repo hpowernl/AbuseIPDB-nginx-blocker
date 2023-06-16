@@ -33,6 +33,10 @@ def get_recent_ips():
 
     return stdout.decode().split('\n')[-100:]
 
+def ensure_blacklist_file_exists():
+    if not os.path.exists(BLACKLIST_FILENAME):
+        open(BLACKLIST_FILENAME, 'w').close()
+
 def check_ip_abuse(config, ip):
     url = 'https://api.abuseipdb.com/api/v2/check'
     querystring = {
@@ -86,6 +90,7 @@ def cleanup_checked_ips(checked_ips):
 
 def main():
     config = load_config()
+    ensure_blacklist_file_exists()
     checked_ips = load_checked_ips()  
 
     for ip in get_recent_ips():
