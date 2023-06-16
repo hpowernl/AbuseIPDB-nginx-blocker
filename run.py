@@ -5,8 +5,8 @@ import requests
 import time
 
 CACHE_FILENAME = 'checked_ips.json'
-BLACKLIST_FILENAME = '/data/web/nginx/server.block_80procent_abuseIP'
-CACHE_EXPIRATION_SECONDS = 48 * 60 * 60  # 48 hours in seconds
+BLACKLIST_FILENAME = '/data/web/nginx/server.block_abuseIP'
+CACHE_EXPIRATION_SECONDS = 30 * 24 * 60 * 60  # 30 Days
 
 def load_config():
     with open('config.json') as f:
