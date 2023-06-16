@@ -1,4 +1,4 @@
-# AbuseIPDB Blacklist Updater on a Hypernode server
+# AbuseIPDB Blacklist on a Hypernode server
 
 This Python application checks your server logs for any suspicious IP addresses. 
 It makes use of the AbuseIPDB API to check the abuse score of each IP. Any IP with an abuse score of 80 or above is added to a blacklist file.
