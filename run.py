@@ -13,26 +13,12 @@ def load_config():
         return json.load(f)
 
 def get_recent_ips():
-    command1 = ['/usr/bin/hypernode-parse-nginx-log', '--today', '--bots', '--fields', 'remote_addr']
-    command2 = ['sort']
-    command3 = ['uniq', '-c']
-    command4 = ['sort', '-n']
-    command5 = ['/usr/bin/awk', '{$1=""; print $0}']
-
-    process1 = subprocess.Popen(command1, stdout=subprocess.PIPE)
-    process2 = subprocess.Popen(command2, stdin=process1.stdout, stdout=subprocess.PIPE)
-    process3 = subprocess.Popen(command3, stdin=process2.stdout, stdout=subprocess.PIPE)
-    process4 = subprocess.Popen(command4, stdin=process3.stdout, stdout=subprocess.PIPE)
-    process5 = subprocess.Popen(command5, stdin=process4.stdout, stdout=subprocess.PIPE)
-
-    process1.stdout.close()  
-    process2.stdout.close()  
-    process3.stdout.close()
-    process4.stdout.close()  
-    stdout, stderr = process5.communicate()
-
-    if process5.returncode != 0:
-        raise Exception(f'Error executing command: {stderr.decode()}')
+    command = "/usr/bin/hypernode-parse-nginx-log --today --bots --fields remote_addr | sort | uniq -c | sort -n | /usr/bin/awk '{$1=\"\"; print $0}'"
+    
+    try:
+        stdout = subprocess.check_output(command, shell=True)
+    except subprocess.CalledProcessError as e:
+        raise Exception(f'Error executing command: {e.output.decode()}')
 
     return stdout.decode().split('\n')[-100:]
 
