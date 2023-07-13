@@ -23,6 +23,14 @@ Provide your AbuseIPDB API key and set the maximum age of the reports you want t
 python3 run.py
 ```
 
+## Cron
+If you want to run this process in a cron, you can use the following:
+
+1. Run `crontab -e` to open a crontab editor.
+2. Now add the following to the last line: `*/30 * * * * cd /data/web/AbuseIPDB-nginx-blocker && /usr/bin/python3 run.py`
+   
+You can run it more frequently than every 30 minutes, but keep in mind that executing the hypernode-parse-nginx-log command can use a lot of resources.
+
 ## Features
 - Scans your server logs for unique IP addresses.
 - Checks each IP against the AbuseIPDB to get its abuse confidence score.
@@ -32,4 +40,4 @@ python3 run.py
 
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[MIT](https://github.com/hpowernl/AbuseIPDB-nginx-blocker/blob/main/LICENSE)
