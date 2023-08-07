@@ -1,8 +1,10 @@
+
 import os
 import subprocess
 import json
 import requests
 import time
+import argparse  # Import argparse module
 
 CACHE_FILENAME = 'checked_ips.json'
 BLACKLIST_FILENAME = '/data/web/nginx/server.block_abuseIP'
@@ -12,8 +14,14 @@ def load_config():
     with open('config.json') as f:
         return json.load(f)
 
-def get_recent_ips():
-    command = "/usr/bin/hypernode-parse-nginx-log --today --bots --fields remote_addr | sort | uniq -c | sort -n | /usr/bin/awk '{$1=\"\"; print $0}'"
+# Update the get_recent_ips function to include bots option
+def get_recent_ips(bots=False):
+    command = "/usr/bin/hypernode-parse-nginx-log --today "
+    
+    if bots:
+        command += "--bots "
+    
+    command += "--fields remote_addr | sort | uniq -c | sort -n | /usr/bin/awk '{$1=\"\"; print $0}'"
     
     try:
         stdout = subprocess.check_output(command, shell=True)
@@ -78,21 +86,26 @@ def cleanup_checked_ips(checked_ips):
     save_checked_ips(checked_ips)
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bots', action='store_true', help='Check bots in logs')
+    args = parser.parse_args()
+
     config = load_config()
     ensure_blacklist_file_exists()
-    checked_ips = load_checked_ips()  
+    checked_ips = load_checked_ips()
 
-    for ip in get_recent_ips():
-        if ip and ip not in checked_ips:  
+    for ip in get_recent_ips(args.bots):  # Pass the bots argument to the get_recent_ips function
+        if ip and ip not in checked_ips:
             score = check_ip_abuse(config, ip)
 
             if score >= 80:
                 add_to_blacklist(ip)
             
-            checked_ips[ip] = time.time() 
+            checked_ips[ip] = time.time()
 
-    save_checked_ips(checked_ips) 
-    cleanup_checked_ips(checked_ips)  
+    save_checked_ips(checked_ips)
+    cleanup_checked_ips(checked_ips)
 
 if __name__ == '__main__':
     main()
