@@ -26,16 +26,10 @@ echo "✓ Setup ready"
 # Script ready for use
 echo "✓ Script ready for Hypernode server"
 
-# Ask user if they want to update now
-read -p "Do you want to download and apply the blocklist now? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Updating blocklist..."
-    python3 blocklist_updater.py
-    echo "✓ Blocklist updated successfully"
-else
-    echo "Skipping initial update. Run 'python3 blocklist_updater.py' when ready."
-fi
+# Download and apply blocklist automatically
+echo "Updating blocklist..."
+python3 blocklist_updater.py
+echo "✓ Blocklist updated successfully"
 
 # Setup cron job for automatic updates every 4 hours
 echo "Setting up automatic updates every 4 hours..."
