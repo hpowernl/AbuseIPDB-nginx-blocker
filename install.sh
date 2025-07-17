@@ -33,7 +33,7 @@ echo "✓ Blocklist updated successfully"
 
 # Setup cron job for automatic updates every 4 hours
 echo "Setting up automatic updates every 4 hours..."
-CRON_JOB="0 */4 * * * cd $(pwd) && python3 blocklist_updater.py >/dev/null 2>&1"
+CRON_JOB="0 */4 * * * cd $(pwd) && python3.11 blocklist_updater.py >/dev/null 2>&1"
 
 # Check if cron job already exists
 if ! crontab -l 2>/dev/null | grep -q "blocklist_updater.py"; then
